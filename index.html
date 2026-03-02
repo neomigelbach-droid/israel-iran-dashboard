@@ -126,7 +126,7 @@
   /* MAIN GRID */
   .main-grid {
     display: grid;
-    grid-template-columns: 240px 1fr 240px;
+    grid-template-columns: 280px 1fr 280px;
     gap: 10px;
     padding: 10px;
     min-height: calc(100vh - 130px);
@@ -474,9 +474,9 @@
     <div class="panel">
       <div class="panel-title">⏱ שעון מבצע</div>
       <div class="mission-clock" id="missionClock">00:00:00</div>
-      <div class="clock-label">זמן ממתחילת הסכסוך — 31 בפברואר 2026</div>
+      <div class="clock-label">זמן ממתחילת הסכסוך — 28 בפברואר 2026, 08:10</div>
       <hr style="border-color:rgba(0,200,150,0.12);margin:10px 0">
-      <div class="status-row"><span class="status-label">תאריך פתיחה</span><span class="status-val">31.02.2026</span></div>
+      <div class="status-row"><span class="status-label">תאריך פתיחה</span><span class="status-val">28.02.2026</span></div>
       <div class="status-row"><span class="status-label">מצב מבצעי</span><span class="status-val red blink">● פעיל</span></div>
       <div class="status-row"><span class="status-label">כוננות</span><span class="status-val orange">DEFCON 2</span></div>
       <div class="status-row"><span class="status-label">מרחב אוויר</span><span class="status-val red">סגור</span></div>
@@ -532,22 +532,22 @@
       <div class="stat-card">
         <div class="stat-num" style="color:var(--red)" id="israelKilled">—</div>
         <div class="stat-lbl">הרוגים בישראל</div>
-        <div class="stat-change" style="color:var(--red)" id="israelKilledSrc">ACLED · 30 ימים</div>
+        <div class="stat-change" style="color:var(--red)">ACLED · 30 ימים</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color:var(--orange)" id="palestineKilled">—</div>
-        <div class="stat-lbl">הרוגים בפלסטין</div>
-        <div class="stat-change" style="color:var(--orange)" id="palestineKilledSrc">ACLED · 30 ימים</div>
+        <div class="stat-num" style="color:var(--red)" id="iranKilled">—</div>
+        <div class="stat-lbl">הרוגים באיראן</div>
+        <div class="stat-change" style="color:var(--red)">ACLED · 30 ימים</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color:var(--blue)" id="totalEvents">—</div>
-        <div class="stat-lbl">אירועים (30 יום)</div>
-        <div class="stat-change" style="color:var(--blue)" id="totalEventsSrc">ACLED · כל הסוגים</div>
+        <div class="stat-num" style="color:var(--orange)" id="israelEvents">—</div>
+        <div class="stat-lbl">אירועים בישראל</div>
+        <div class="stat-change" style="color:var(--orange)">ACLED · 30 ימים</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color:var(--green)" id="totalCountries">—</div>
-        <div class="stat-lbl">מדינות מעורבות</div>
-        <div class="stat-change" style="color:var(--green)">ACLED · אזור</div>
+        <div class="stat-num" style="color:var(--orange)" id="iranEvents">—</div>
+        <div class="stat-lbl">אירועים באיראן</div>
+        <div class="stat-change" style="color:var(--orange)">ACLED · 30 ימים</div>
       </div>
     </div>
 
@@ -573,6 +573,19 @@
           <span style="color:#ff2222">■</span> טיל איראני &nbsp;
           <span style="color:#00bfff">■</span> תקיפה ישראלית &nbsp;
           <span style="color:#ffe600">■</span> יירוט
+        </div>
+        <!-- MAP CONTROLS -->
+        <div style="position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:5px;">
+          <button onclick="toggleHeatmap()" id="btnHeat" style="background:rgba(6,14,11,0.9);border:1px solid rgba(0,200,150,0.4);color:var(--green);padding:5px 10px;border-radius:4px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:11px;">🔥 Heatmap</button>
+          <button onclick="toggleACLED()" id="btnACLED" style="background:rgba(6,14,11,0.9);border:1px solid rgba(0,200,150,0.4);color:var(--green);padding:5px 10px;border-radius:4px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:11px;">🔴 ACLED</button>
+          <button onclick="toggleNewsMap()" id="btnNews" style="background:rgba(6,14,11,0.9);border:1px solid rgba(0,200,150,0.4);color:var(--green);padding:5px 10px;border-radius:4px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:11px;">📰 חדשות</button>
+        </div>
+        <!-- TIME SLIDER -->
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(6,14,11,0.9);border:1px solid rgba(0,200,150,0.3);border-radius:6px;padding:6px 14px;display:flex;align-items:center;gap:8px;font-family:'Heebo',sans-serif;font-size:11px;color:#aaa;">
+          <span>30 יום</span>
+          <input type="range" id="timeSlider" min="1" max="30" value="30" style="width:160px;accent-color:#00c896;">
+          <span>היום</span>
+          <span id="sliderDate" style="color:var(--green);font-weight:700;"></span>
         </div>
       </div>
 
@@ -693,18 +706,17 @@
       <div id="worldReactions" style="font-size:11px;"></div>
     </div>
 
-
   </div>
 </div>
 
-<!-- FULL-WIDTH NEWS SECTION -->
-<div style="padding:0 10px;margin-bottom:10px;">
+<!-- FULL WIDTH NEWS -->
+<div style="padding:0 10px;margin-bottom:6px;">
   <div class="panel" style="border-color:rgba(56,189,248,0.35);">
     <div class="panel-title" style="color:var(--blue);display:flex;justify-content:space-between;align-items:center;text-transform:none;">
       <span>📡 חדשות חיות</span>
       <span id="gdeltStatus" style="font-size:11px;color:#444;font-weight:400;">⌛ טוען...</span>
     </div>
-    <div id="liveNewsFeed" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:250px;overflow-y:auto;font-size:12px;line-height:1.5;">
+    <div id="liveNewsFeed" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:200px;overflow-y:auto;font-size:12px;line-height:1.5;">
       <div style="color:#333;text-align:center;padding:16px 0;grid-column:span 3">טוען כתבות חיות...</div>
     </div>
   </div>
@@ -712,12 +724,13 @@
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
-  <span id="dataSourceLabel" style="color:#3a5550;">⟳ מתחבר ל-ACLED...</span>
+  <span id="dataSourceLabel" style="color:#3a5550;">⟳ מתחבר ל-GDELT...</span>
   <span id="bottomTime">--:--:--</span>
-  <span>מרכז מעקב מבצעי v4.0 · ACLED + RSS live</span>
+  <span>מרכז מעקב מבצעי v5.0 · ACLED live · RSS · נתונים אמיתיים</span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <script>
 // ============ STATE ============
 const state = {
@@ -765,17 +778,21 @@ function animateNumber(el, target, duration = 800) {
   requestAnimationFrame(update);
 }
 
-// ============ MISSION CLOCK ============
+// ============ MISSION CLOCK (REAL) ============
+// המלחמה התחילה: שבת 28 בפברואר 2026 בשעה 08:10 שעון ישראל
+const WAR_START = new Date('2026-02-28T08:10:00+02:00');
+
 function updateClock() {
-  state.missionSeconds++;
-  const days = Math.floor(state.missionSeconds / 86400);
-  const h = Math.floor((state.missionSeconds % 86400) / 3600).toString().padStart(2,'0');
-  const m = Math.floor((state.missionSeconds % 3600) / 60).toString().padStart(2,'0');
-  const s = (state.missionSeconds % 60).toString().padStart(2,'0');
-  document.getElementById('missionClock').textContent = `${h}:${m}:${s}`;
-  // Init to some time
+  const now = new Date();
+  const diffMs = now - WAR_START;
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const h = Math.floor((totalSeconds % 86400) / 3600).toString().padStart(2,'0');
+  const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2,'0');
+  const s = (totalSeconds % 60).toString().padStart(2,'0');
+  document.getElementById('missionClock').textContent = days > 0 ? `${days}d ${h}:${m}:${s}` : `${h}:${m}:${s}`;
+  state.missionSeconds = totalSeconds;
 }
-state.missionSeconds = 4 * 3600 + 23 * 60 + 17; // start at 4:23:17
 
 // ============ RADAR DOTS ============
 function updateRadar() {
@@ -1139,17 +1156,12 @@ function updateAllStats() {
   const sysLoad = Math.min(99, Math.max(60, 70 + rand(-5,5)));
 
   // DOM updates
-  animateNumber(document.getElementById('missilesLaunched'), state.missilesLaunched);
-  animateNumber(document.getElementById('intercepted'), state.intercepted);
-  animateNumber(document.getElementById('casualties'), state.casualties);
-  animateNumber(document.getElementById('targets'), state.targets);
   animateNumber(document.getElementById('displaced'), state.displaced);
   animateNumber(document.getElementById('enemyCas'), state.enemyCas);
   document.getElementById('planesDown').textContent = state.planesDown;
   document.getElementById('assets').textContent = state.assets;
   animateNumber(document.getElementById('cost'), state.cost);
 
-  document.getElementById('missilesChange').textContent = `↑ +${newMissiles} השידור האחרון`;
   document.getElementById('units').textContent = rand(240,260);
 
   document.getElementById('interceptRate').textContent = intercPct + '%';
@@ -1228,142 +1240,195 @@ setInterval(() => {
   if (Math.random() < 0.3) fireMissile(false);
 }, 2500);
 
+// ══════════════════════════════════════════════════════════
+//  GDELT LIVE NEWS — קריאה ישירה מהדפדפן, ללא שרת, ללא מפתח
+//  מתעדכן כל 3 דקות אוטומטית
+// ══════════════════════════════════════════════════════════
+
+// ── render articles (unified format) ─────────────────────────────────────
 // ============ ACLED REAL DATA ============
 let acledEvents = [];
+let acledMarkers = [];
+let heatLayer = null;
+let newsMapMarkers = [];
+let showHeatmap = true;
+let showACLEDMarkers = true;
+let showNewsOnMap = true;
 
 async function loadACLEDData() {
   try {
     const response = await fetch('/api/acled', { signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error('ACLED API error');
     const data = await response.json();
-
     if (data.status === 'success' && data.events) {
       acledEvents = data.events;
       updateACLEDStats(data.events);
-      addACLEDMarkersToMap(data.events);
+      renderACLEDOnMap(data.events);
     }
   } catch(err) {
-    console.warn('ACLED fetch failed:', err.message);
-    document.getElementById('israelKilled').textContent = '—';
-    document.getElementById('palestineKilled').textContent = '—';
-    document.getElementById('totalEvents').textContent = '—';
-    document.getElementById('totalCountries').textContent = '—';
+    console.warn('ACLED:', err.message);
   }
 }
 
 function updateACLEDStats(events) {
-  let israelFatalities = 0;
-  let palestineFatalities = 0;
-  const countries = new Set();
-
+  let israelKilled = 0, iranKilled = 0, israelEvents = 0, iranEvents = 0;
   events.forEach(e => {
-    countries.add(e.country);
-    if (e.country === 'Israel') israelFatalities += e.fatalities;
-    if (e.country === 'Palestine') palestineFatalities += e.fatalities;
+    if (e.country === 'Israel') { israelKilled += e.fatalities; israelEvents++; }
+    if (e.country === 'Iran') { iranKilled += e.fatalities; iranEvents++; }
   });
-
-  animateNumber(document.getElementById('israelKilled'), israelFatalities);
-  animateNumber(document.getElementById('palestineKilled'), palestineFatalities);
-  animateNumber(document.getElementById('totalEvents'), events.length);
-  document.getElementById('totalCountries').textContent = countries.size;
+  animateNumber(document.getElementById('israelKilled'), israelKilled);
+  animateNumber(document.getElementById('iranKilled'), iranKilled);
+  animateNumber(document.getElementById('israelEvents'), israelEvents);
+  animateNumber(document.getElementById('iranEvents'), iranEvents);
 }
 
-function addACLEDMarkersToMap(events) {
+function renderACLEDOnMap(events) {
   if (!leafletMap) return;
+  acledMarkers.forEach(m => leafletMap.removeLayer(m));
+  acledMarkers = [];
 
-  // Remove old ACLED markers
-  if (window._acledMarkers) {
-    window._acledMarkers.forEach(m => leafletMap.removeLayer(m));
-  }
-  window._acledMarkers = [];
+  const daysBack = parseInt(document.getElementById('timeSlider')?.value || 30);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - daysBack);
+  document.getElementById('sliderDate').textContent = cutoff.toLocaleDateString('he-IL');
 
-  events.forEach(e => {
+  const filtered = events.filter(e => new Date(e.date) >= cutoff);
+
+  filtered.forEach(e => {
     if (!e.lat || !e.lng) return;
-
-    const color = e.fatalities > 5 ? '#f25c5c' : e.fatalities > 0 ? '#f59e0b' : '#38bdf8';
-    const radius = Math.max(4, Math.min(15, e.fatalities * 2 + 4));
+    const isRecent = (Date.now() - new Date(e.date).getTime()) < 3 * 86400000;
+    const color = e.fatalities > 0 ? '#f25c5c' : '#f59e0b';
+    const radius = Math.max(5, Math.min(18, e.fatalities * 2.5 + 5));
 
     const marker = L.circleMarker([e.lat, e.lng], {
       radius: radius,
       fillColor: color,
-      color: color,
-      weight: 1,
-      opacity: 0.8,
-      fillOpacity: 0.4,
+      color: isRecent ? '#ffffff' : color,
+      weight: isRecent ? 2 : 1,
+      opacity: 0.9,
+      fillOpacity: isRecent ? 0.6 : 0.35,
     }).bindTooltip(
-      `<b>${e.type}</b><br>${e.country} · ${e.region}<br>הרוגים: ${e.fatalities}<br>${e.date}`,
-      { className: 'map-tooltip' }
-    ).addTo(leafletMap);
-
-    window._acledMarkers.push(marker);
+      `<div style="text-align:right;direction:rtl"><b>${e.type}</b><br>${e.country} · ${e.region}<br>הרוגים: ${e.fatalities}<br>${e.date}</div>`,
+      { className: 'map-tooltip', direction: 'top' }
+    );
+    if (showACLEDMarkers) marker.addTo(leafletMap);
+    acledMarkers.push(marker);
   });
-}
 
-// Load ACLED on boot + refresh every 5 minutes
-loadACLEDData();
-setInterval(loadACLEDData, 5 * 60 * 1000);
-
-// ══════════════════════════════════════════════════════════
-//  GDELT LIVE NEWS — קריאה ישירה מהדפדפן, ללא שרת, ללא מפתח
-//  מתעדכן כל 3 דקות אוטומטית
-// ══════════════════════════════════════════════════════════
-
-// ── translate & render articles ─────────────────────────────────────
-async function translateToHebrew(text) {
-  try {
-    if (!text || text.length < 3) return text;
-    // Check if already Hebrew (contains Hebrew chars)
-    if (/[\u0590-\u05FF]/.test(text)) return text;
-    const encoded = encodeURIComponent(text.substring(0, 500));
-    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encoded}&langpair=en|he`,
-      { signal: AbortSignal.timeout(5000) });
-    const data = await response.json();
-    if (data.responseData && data.responseData.translatedText) {
-      return data.responseData.translatedText;
-    }
-    return text;
-  } catch(e) {
-    return text;
+  // Heatmap
+  if (heatLayer) leafletMap.removeLayer(heatLayer);
+  const heatData = filtered.filter(e => e.lat && e.lng).map(e => [e.lat, e.lng, (e.fatalities + 1) * 0.5]);
+  if (heatData.length > 0) {
+    heatLayer = L.heatLayer(heatData, {
+      radius: 30, blur: 25, maxZoom: 10,
+      gradient: {0.2:'#00c896', 0.5:'#f59e0b', 0.8:'#f25c5c', 1:'#ff0000'}
+    });
+    if (showHeatmap) heatLayer.addTo(leafletMap);
   }
 }
 
-async function renderNews(articles) {
+// News on map
+const newsLocations = {
+  'israel':[31.5,34.8],'iran':[32.4,53.7],'tel aviv':[32.07,34.78],
+  'jerusalem':[31.77,35.21],'tehran':[35.69,51.39],'lebanon':[33.9,35.5],
+  'beirut':[33.89,35.5],'syria':[34.8,38.9],'damascus':[33.51,36.29],
+  'gaza':[31.5,34.47],'haifa':[32.82,35.0],'isfahan':[32.66,51.67],
+  'yemen':[15.35,44.2],'iraq':[33.2,43.7],'baghdad':[33.31,44.37],
+  'houthi':[15.35,44.2],'hezbollah':[33.9,35.5],'natanz':[33.72,51.92],
+};
+
+function pinNewsToMap(articles) {
+  newsMapMarkers.forEach(m => leafletMap.removeLayer(m));
+  newsMapMarkers = [];
+  if (!showNewsOnMap || !leafletMap) return;
+  const placed = new Set();
+  articles.slice(0, 25).forEach(a => {
+    const title = (a.title || '').toLowerCase();
+    for (const [kw, coords] of Object.entries(newsLocations)) {
+      if (title.includes(kw) && !placed.has(kw)) {
+        placed.add(kw);
+        const m = L.marker(coords, {
+          icon: L.divIcon({
+            html: '<div style="font-size:14px;filter:drop-shadow(0 0 4px #38bdf8);">📰</div>',
+            className: '', iconSize: [18,18], iconAnchor: [9,9],
+          })
+        }).bindPopup(
+          `<div style="direction:rtl;text-align:right;font-family:Heebo;max-width:200px;font-size:12px;">
+            <b>${a.title}</b><br><small>${a.source||''}</small><br>
+            <a href="${a.link||a.url||'#'}" target="_blank" style="color:#38bdf8">קרא עוד</a>
+          </div>`
+        ).addTo(leafletMap);
+        newsMapMarkers.push(m);
+        break;
+      }
+    }
+  });
+}
+
+function toggleHeatmap() {
+  showHeatmap = !showHeatmap;
+  if (showHeatmap && heatLayer) heatLayer.addTo(leafletMap);
+  else if (heatLayer) leafletMap.removeLayer(heatLayer);
+  document.getElementById('btnHeat').style.borderColor = showHeatmap ? '#00c896' : 'rgba(0,200,150,0.2)';
+}
+function toggleACLED() {
+  showACLEDMarkers = !showACLEDMarkers;
+  acledMarkers.forEach(m => showACLEDMarkers ? m.addTo(leafletMap) : leafletMap.removeLayer(m));
+  document.getElementById('btnACLED').style.borderColor = showACLEDMarkers ? '#00c896' : 'rgba(0,200,150,0.2)';
+}
+function toggleNewsMap() {
+  showNewsOnMap = !showNewsOnMap;
+  if (!showNewsOnMap) newsMapMarkers.forEach(m => leafletMap.removeLayer(m));
+  document.getElementById('btnNews').style.borderColor = showNewsOnMap ? '#00c896' : 'rgba(0,200,150,0.2)';
+}
+
+// Time slider
+document.getElementById('timeSlider')?.addEventListener('input', () => renderACLEDOnMap(acledEvents));
+
+// Load ACLED on boot + every 5 min
+loadACLEDData();
+setInterval(loadACLEDData, 5 * 60 * 1000);
+
+async function translateToHebrew(text) {
+  try {
+    if (!text || /[\u0590-\u05FF]/.test(text)) return text;
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.substring(0,500))}&langpair=en|he`,
+      { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    return data.responseData?.translatedText || text;
+  } catch(e) { return text; }
+}
+
+function renderNews(articles) {
   const el = document.getElementById('liveNewsFeed');
   if (!articles?.length) {
     el.innerHTML = '<div style="color:#333;text-align:center;padding:12px;grid-column:span 3">אין כתבות זמינות</div>';
     return;
   }
-
-  // Render first without translation
   const items = articles.slice(0, 18);
   el.innerHTML = items.map((a, i) => {
     let dateStr = '';
-    try {
-      const raw = a.pubDate || a.seendate || a.date || '';
-      const d = new Date(raw);
-      if (!isNaN(d)) dateStr = d.toLocaleDateString('he-IL');
-    } catch(_) {}
-    return `<a href="${a.link || a.url || '#'}" target="_blank" id="newsItem${i}"
-        style="display:block;padding:10px;border:1px solid rgba(56,189,248,0.1);border-radius:4px;text-decoration:none;background:rgba(0,15,10,0.5);">
-      <div class="news-title" style="color:#c8eaf8;font-size:12.5px;font-weight:600;line-height:1.4;"
-           onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#c8eaf8'">
-        ${(a.title || '').replace(/<[^>]+>/g,'')}
+    try { const d = new Date(a.pubDate||a.seendate||a.date||''); if(!isNaN(d)) dateStr = d.toLocaleDateString('he-IL'); } catch(_){}
+    return `<a href="${a.link||a.url||'#'}" target="_blank" id="newsItem${i}"
+      style="display:block;padding:8px;border:1px solid rgba(56,189,248,0.12);border-radius:4px;text-decoration:none;background:rgba(0,15,10,0.5);">
+      <div class="news-title" style="color:#c8eaf8;font-size:12px;font-weight:600;line-height:1.4;"
+        onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#c8eaf8'">
+        ${(a.title||'').replace(/<[^>]+>/g,'')}
       </div>
-      <div style="color:#2a4a55;font-size:11px;margin-top:4px">
-        ${a.source || a.domain || ''} · ${dateStr}
-      </div>
+      <div style="color:#2a4a55;font-size:10px;margin-top:3px">${a.source||a.domain||''} · ${dateStr}</div>
     </a>`;
   }).join('');
 
-  // Translate titles to Hebrew in background
+  // Pin news to map
+  if (leafletMap) pinNewsToMap(items);
+
+  // Translate titles
   items.forEach(async (a, i) => {
-    const titleEl = document.querySelector(`#newsItem${i} .news-title`);
-    if (titleEl) {
-      const originalTitle = (a.title || '').replace(/<[^>]+>/g, '');
-      const translated = await translateToHebrew(originalTitle);
-      if (translated !== originalTitle) {
-        titleEl.textContent = translated;
-      }
+    const el = document.querySelector(`#newsItem${i} .news-title`);
+    if (el) {
+      const orig = (a.title||'').replace(/<[^>]+>/g,'');
+      const translated = await translateToHebrew(orig);
+      if (translated !== orig) el.textContent = translated;
     }
   });
 }
@@ -1384,10 +1449,10 @@ function setStatus(ok, text) {
 
 // ── RSS via rss2json (ללא מפתח, ללא CORS) ────────────────────────────────
 const RSS_FEEDS = [
-  { url: 'https://www.timesofisrael.com/feed/',             source: 'Times of Israel' },
-  { url: 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx',source: 'Jerusalem Post'  },
-  { url: 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml', source: 'BBC Middle East' },
-  { url: 'https://rss.cnn.com/rss/edition_meast.rss',       source: 'CNN Middle East' },
+  { url: 'https://www.ynet.co.il/Integration/StoryRss2.xml',  source: 'ynet' },
+  { url: 'https://rss.walla.co.il/feed/1',                     source: 'וואלה' },
+  { url: 'https://rss.mako.co.il/rssChannel/d4dc8e29c4a8b110VgnVCM2000002a0c14acRCRD.xml', source: 'mako' },
+  { url: 'https://www.maariv.co.il/Rss/RssFeedsMivzakChadashot', source: 'מעריב' },
 ];
 
 async function fetchRSS(feed) {
@@ -1412,11 +1477,28 @@ async function fetchGDELT() {
   return items;
 }
 
-// ── Main: try RSS feeds first, then GDELT ─────────────────────────────────
+// ── Main: try /api/news first, then RSS, then GDELT ─────────────────────
 async function loadLiveNews() {
   const ts = () => new Date().toLocaleTimeString('he-IL');
 
-  // Try RSS feeds in parallel
+  // Option 1: Try Vercel serverless /api/news
+  try {
+    const apiRes = await fetch('/api/news', { signal: AbortSignal.timeout(10000) });
+    if (apiRes.ok) {
+      const apiData = await apiRes.json();
+      if (apiData.articles && apiData.articles.length > 0) {
+        const mapped = apiData.articles.map(a => ({
+          title: a.title, link: a.url, source: a.source, pubDate: a.date
+        }));
+        renderNews(mapped);
+        updateTickerReal(mapped);
+        setStatus(true, `${mapped.length} כתבות · עודכן ${ts()}`);
+        return;
+      }
+    }
+  } catch(e) { console.warn('api/news failed:', e.message); }
+
+  // Option 2: Try RSS feeds directly from browser
   const results = await Promise.allSettled(RSS_FEEDS.map(fetchRSS));
   const allArticles = results
     .filter(r => r.status === 'fulfilled')
@@ -1430,7 +1512,7 @@ async function loadLiveNews() {
     return;
   }
 
-  // Fallback: GDELT
+  // Option 3: Fallback GDELT
   try {
     const gdeltArticles = await fetchGDELT();
     renderNews(gdeltArticles);
@@ -1439,10 +1521,9 @@ async function loadLiveNews() {
   } catch(e) {
     setStatus(false, 'לא זמין');
     document.getElementById('liveNewsFeed').innerHTML =
-      `<div style="padding:12px;color:#2a4050;font-size:12px;line-height:1.9;">
+      `<div style="padding:12px;color:#2a4050;font-size:12px;line-height:1.9;grid-column:span 3">
         לא הצלחנו לטעון חדשות חיות כרגע.<br>
-        <span style="color:#f59e0b">סיבות אפשריות:</span> אין חיבור לאינטרנט,
-        או שה-tiiny.host חוסם את הבקשה.<br>
+        <span style="color:#f59e0b">סיבות אפשריות:</span> אין חיבור לאינטרנט.<br>
         נסי לרענן את הדף בעוד דקה.
       </div>`;
   }
