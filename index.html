@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מרכז מעקב מבצעי - ישראל מול איראן</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --green: #00c896;
+    --dim-green: #00876a;
+    --orange: #f59e0b;
+    --red: #f25c5c;
+    --blue: #38bdf8;
+    --yellow: #fbbf24;
+    --bg: #060e0b;
+    --panel-bg: rgba(0, 22, 16, 0.92);
+    --border: #00c896;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: 'Heebo', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(0,60,50,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,40,35,0.08) 0%, transparent 60%);
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 18px 20px 10px;
+    border-bottom: 2px solid var(--green);
+    background: rgba(0,20,0,0.95);
+    position: relative;
+  }
+  .header-badge {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--dim-green);
+  }
+  .header-badge-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 30px;
+    font-size: 11px;
+    color: var(--dim-green);
+    text-align: left;
+  }
+  .logo-circle {
+    width: 55px; height: 55px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 12px var(--green), inset 0 0 12px rgba(0,255,65,0.1);
+    animation: pulse-border 2s infinite;
+  }
+  .header h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 16px rgba(0,200,150,0.7);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+  .warning-banner {
+    background: rgba(242,92,92,0.12);
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-size: 14px;
+    padding: 5px 20px;
+    letter-spacing: 1px;
+    animation: blink-bg 1.5s infinite;
+    margin-top: 8px;
+  }
+  .sim-badge {
+    display: inline-block;
+    background: rgba(255,140,0,0.2);
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    font-size: 10px;
+    padding: 2px 10px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 10px;
+    padding: 10px;
+    min-height: calc(100vh - 130px);
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    box-shadow: 0 0 8px rgba(0,200,150,0.06), inset 0 0 20px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,200,150,0.5), transparent);
+  }
+  .panel-title {
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,140,0,0.3);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  /* MISSION CLOCK */
+  .mission-clock {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px;
+    color: var(--green);
+    text-shadow: 0 0 12px rgba(0,200,150,0.6);
+    letter-spacing: 4px;
+    text-align: center;
+  }
+  .clock-label {
+    font-size: 13px;
+    color: var(--dim-green);
+    text-align: center;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* STATUS ROW */
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 7px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(0,255,65,0.08);
+    padding-bottom: 6px;
+  }
+  .status-label { color: #aaa; font-size: 13px; }
+  .status-val { color: var(--green); font-weight: 700; font-size: 14px; }
+  .status-val.red { color: var(--red); }
+  .status-val.orange { color: var(--orange); }
+  .status-val.blue { color: var(--blue); }
+  .status-val.yellow { color: var(--yellow); }
+
+  /* BIG NUMBER */
+  .big-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 900;
+    text-align: center;
+    text-shadow: 0 0 20px currentColor;
+    line-height: 1;
+    animation: num-glow 2s infinite alternate;
+  }
+  .big-label {
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-top: 4px;
+    color: var(--dim-green);
+  }
+
+  /* GAUGE */
+  .gauge-wrap { margin: 10px 0; }
+  .gauge-title { font-size: 13px; color: #aaa; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .gauge-bar {
+    height: 14px;
+    background: rgba(0,200,150,0.08);
+    border: 1px solid rgba(0,200,150,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .gauge-fill {
+    height: 100%;
+    transition: width 1.5s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .gauge-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 3px; height: 100%;
+    background: white;
+    box-shadow: 0 0 6px white;
+  }
+  .gauge-fill.green { background: linear-gradient(90deg, #002e22, var(--green)); }
+  .gauge-fill.orange { background: linear-gradient(90deg, #1e1000, var(--orange)); }
+  .gauge-fill.red { background: linear-gradient(90deg, #1a0808, var(--red)); }
+  .gauge-fill.blue { background: linear-gradient(90deg, #001828, var(--blue)); }
+
+  /* MAP */
+  .map-container {
+    position: relative;
+    background: rgba(0,10,0,0.9);
+    border: 1px solid rgba(0,255,65,0.3);
+    border-radius: 4px;
+    height: 280px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .map-svg { width: 100%; height: 100%; }
+
+  /* ALERT TICKER */
+  .ticker-wrap {
+    background: rgba(255,34,34,0.1);
+    border: 1px solid rgba(255,34,34,0.4);
+    overflow: hidden;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    border-radius: 2px;
+  }
+  .ticker-label {
+    background: var(--red);
+    color: #000;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    letter-spacing: 1px;
+  }
+  .ticker-text {
+    padding-right: 20px;
+    font-size: 13px;
+    color: var(--red);
+    white-space: nowrap;
+    animation: scroll-left 25s linear infinite;
+  }
+
+  /* MISSILE TRACK */
+  .missile-log {
+    max-height: 160px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green) transparent;
+  }
+  .missile-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,255,65,0.1);
+    font-size: 13px;
+    animation: fadeIn 0.5s ease;
+  }
+  .missile-entry .time { color: #666; font-size: 12px; }
+  .missile-entry .event { color: var(--green); }
+  .missile-entry .result-ok { color: var(--green); }
+  .missile-entry .result-hit { color: var(--red); }
+  .missile-entry .result-partial { color: var(--orange); }
+
+  /* DONUT */
+  .donut-wrap { display: flex; align-items: center; gap: 14px; margin: 8px 0; }
+  .donut-svg { flex-shrink: 0; }
+  .donut-legend { font-size: 13px; }
+  .donut-legend div { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* CENTER PANEL GRID */
+  .center-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+  }
+  .span2 { grid-column: span 2; }
+
+  /* STAT CARDS */
+  .stat-card {
+    background: rgba(0,18,13,0.7);
+    border: 1px solid rgba(0,200,150,0.18);
+    border-radius: 4px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 30px;
+    font-weight: 900;
+    text-shadow: 0 0 15px currentColor;
+    line-height: 1;
+  }
+  .stat-lbl { font-size: 13px; letter-spacing: 0px; margin-top: 4px; color: #aaa; }
+  .stat-change { font-size: 12px; margin-top: 3px; }
+
+  /* BLINK */
+  .blink { animation: blink 1s step-end infinite; }
+  .blink-slow { animation: blink 2.5s step-end infinite; }
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse-red 1s infinite;
+    margin-left: 6px;
+  }
+
+  /* THREAT LEVEL */
+  .threat-level {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+  }
+  .threat-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 30px;
+  }
+  .threat-segment {
+    width: 100%;
+    height: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+    transition: background 0.5s;
+  }
+  .threat-lbl { font-size: 10px; color: #888; writing-mode: horizontal-tb; margin-top: 4px; text-align: center; }
+
+  /* COMMS */
+  .comm-entry {
+    font-size: 13px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,255,65,0.08);
+    display: flex;
+    gap: 8px;
+  }
+  .comm-from { color: var(--orange); width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+  .comm-msg { color: #aaa; }
+
+  /* ANIMATIONS */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes blink-bg { 0%,100%{background:rgba(242,92,92,0.12)} 50%{background:rgba(242,92,92,0.04)} }
+  @keyframes pulse-border { 0%,100%{box-shadow:0 0 6px var(--green),inset 0 0 6px rgba(0,200,150,0.08)} 50%{box-shadow:0 0 14px var(--green),inset 0 0 14px rgba(0,200,150,0.14)} }
+  @keyframes pulse-red { 0%,100%{box-shadow:0 0 5px var(--red);opacity:1} 50%{box-shadow:0 0 12px var(--red);opacity:0.7} }
+  @keyframes scroll-left { 0%{transform:translateX(110%)} 100%{transform:translateX(-110%)} }
+  @keyframes fadeIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes num-glow { from{text-shadow:0 0 8px currentColor} to{text-shadow:0 0 18px currentColor} }
+  @keyframes missile-fly {
+    0%{transform:translate(0,0);opacity:1}
+    100%{transform:translate(var(--tx),var(--ty));opacity:0}
+  }
+  @keyframes radar-spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+  @keyframes explosion { 0%{r:2;opacity:1} 100%{r:12;opacity:0} }
+
+  /* RADAR */
+  .radar-container { position: relative; width: 120px; height: 120px; margin: 0 auto; }
+  .radar-svg { width: 100%; height: 100%; }
+
+  /* LEAFLET OVERRIDES */
+  .leaflet-container { background: #060e0b !important; }
+  .map-tooltip {
+    background: rgba(4,16,12,0.92) !important;
+    border: 1px solid rgba(0,200,150,0.4) !important;
+    color: #00c896 !important;
+    font-family: 'Heebo', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 8px rgba(0,200,150,0.2) !important;
+    padding: 2px 7px !important;
+    border-radius: 3px !important;
+  }
+  .leaflet-tooltip-bottom::before { border-bottom-color: rgba(0,200,150,0.4) !important; }
+  .leaflet-tooltip-top::before { border-top-color: rgba(0,200,150,0.4) !important; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: rgba(0,255,65,0.05); }
+  ::-webkit-scrollbar-thumb { background: #006652; border-radius: 2px; }
+
+  /* BOTTOM BAR */
+  .bottom-bar {
+    padding: 8px 20px;
+    border-top: 1px solid rgba(0,255,65,0.2);
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--dim-green);
+    background: rgba(0,10,0,0.8);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">
+    <div class="logo-circle">🛡️</div>
+    <div>
+      <div style="color:var(--green);font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px">מרכז שליטה</div>
+      <div style="font-size:9px;color:#666">CONTROL CENTER</div>
+    </div>
+  </div>
+  <h1>⚡ מרכז מעקב מבצעי — ישראל vs. איראן ⚡</h1>
+  <div class="header-sub">OPERATIONAL TRACKING CENTER · LIVE FEED · CLASSIFIED</div>
+  <div class="warning-banner">
+    ⚠ התראה פעילה ⚠ &nbsp;|&nbsp; מצב חירום לאומי &nbsp;|&nbsp; כוננות רמה א׳ &nbsp;|&nbsp; <span class="live-dot"></span> שידור חי
+  </div>
+  <div class="sim-badge">⚠ סימולציה בדיונית בלבד — כל הנתונים פיקטיביים</div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap" style="margin:0 10px;">
+  <span class="ticker-label">🔴 דחוף</span>
+  <span class="ticker-text" id="tickerText">
+    ⚡ פגיעה מיירטת מוצלחת מעל באר שבע · פגזים בלתי פגועים הושמדו · יחידת 669 בכוננות מלאה · מטוסי F-35 ממריאים מנבטים · הפצצת מתקן גרעיני בנתנז · ירי נ"מ מוגבר · כוחות שריון בגבול הצפון · ספינות קרב בים סוף · גיוס מילואים מסדר שני ·
+  </span>
+</div>
+
+<!-- MAIN -->
+<div class="main-grid">
+
+  <!-- LEFT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+    <!-- MISSION TIME -->
+    <div class="panel">
+      <div class="panel-title">⏱ שעון מבצע</div>
+      <div class="mission-clock" id="missionClock">00:00:00</div>
+      <div class="clock-label">זמן ממתחילת הסכסוך — 31 בפברואר 2026</div>
+      <hr style="border-color:rgba(0,200,150,0.12);margin:10px 0">
+      <div class="status-row"><span class="status-label">תאריך פתיחה</span><span class="status-val">31.02.2026</span></div>
+      <div class="status-row"><span class="status-label">מצב מבצעי</span><span class="status-val red blink">● פעיל</span></div>
+      <div class="status-row"><span class="status-label">כוננות</span><span class="status-val orange">DEFCON 2</span></div>
+      <div class="status-row"><span class="status-label">מרחב אוויר</span><span class="status-val red">סגור</span></div>
+      <div class="status-row"><span class="status-label">יחידות מופעלות</span><span class="status-val" id="units">247</span></div>
+    </div>
+
+    <!-- RADAR -->
+    <div class="panel">
+      <div class="panel-title">📡 מעקב איומים</div>
+      <div class="radar-container">
+        <svg class="radar-svg" viewBox="0 0 120 120" id="radarSvg">
+          <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(0,200,150,0.18)" stroke-width="1"/>
+          <circle cx="60" cy="60" r="38" fill="none" stroke="rgba(0,200,150,0.18)" stroke-width="1"/>
+          <circle cx="60" cy="60" r="20" fill="none" stroke="rgba(0,200,150,0.18)" stroke-width="1"/>
+          <line x1="60" y1="4" x2="60" y2="116" stroke="rgba(0,200,150,0.12)" stroke-width="1"/>
+          <line x1="4" y1="60" x2="116" y2="60" stroke="rgba(0,200,150,0.12)" stroke-width="1"/>
+          <g id="radarSweep" style="transform-origin:60px 60px;animation:radar-spin 3s linear infinite">
+            <path d="M60,60 L60,4 A56,56 0 0,1 116,60 Z" fill="rgba(0,200,150,0.07)"/>
+            <line x1="60" y1="60" x2="60" y2="4" stroke="rgba(0,200,150,0.55)" stroke-width="1.5"/>
+          </g>
+          <g id="radarDots"></g>
+        </svg>
+      </div>
+      <div style="display:flex;justify-content:space-around;margin-top:8px;font-size:10px;">
+        <div><span style="color:var(--red)">● </span>איום</div>
+        <div><span style="color:var(--green)">● </span>ידידותי</div>
+        <div><span style="color:var(--yellow)">● </span>לא ידוע</span></div>
+      </div>
+    </div>
+
+    <!-- THREAT LEVEL -->
+    <div class="panel">
+      <div class="panel-title">⚡ רמת איום לאומית</div>
+      <div class="threat-level" id="threatDisplay"></div>
+      <div style="text-align:center;margin-top:8px;">
+        <span style="font-family:'Heebo',sans-serif;font-size:16px;font-weight:900;color:var(--red);text-shadow:0 0 8px rgba(242,92,92,0.5)" id="threatText">קריטי</span>
+      </div>
+    </div>
+
+    <!-- COMMS LOG -->
+    <div class="panel">
+      <div class="panel-title">📻 תקשורת מוצפנת</div>
+      <div id="commsLog" style="max-height:120px;overflow-y:auto;"></div>
+    </div>
+
+  </div>
+
+  <!-- CENTER COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+    <!-- BIG STATS ROW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--red)" id="missilesLaunched">0</div>
+        <div class="stat-lbl">טילים שנורו</div>
+        <div class="stat-change" style="color:var(--red)" id="missilesChange">↑ +0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--green)" id="intercepted">0</div>
+        <div class="stat-lbl">יורטו בהצלחה</div>
+        <div class="stat-change" style="color:var(--green)">✓ כיפת ברזל</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--orange)" id="casualties">0</div>
+        <div class="stat-lbl">פגועים (בד׳)</div>
+        <div class="stat-change" style="color:var(--orange)" id="casChange">↑ עדכון חי</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--blue)" id="targets">0</div>
+        <div class="stat-lbl">מטרות הושמדו</div>
+        <div class="stat-change" style="color:var(--blue)">● מאומת</div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="panel" style="flex:1">
+      <div class="panel-title">🗺 מפת אזור הסכסוך — זמן אמת</div>
+      <div class="map-container" id="mapWrap">
+        <div id="leafletMap" style="width:100%;height:100%;"></div>
+        <!-- Missile animation overlay -->
+        <svg id="missileOverlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:800;">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <g id="missileGroup"></g>
+          <g id="explosionGroup"></g>
+          <g id="interceptGroup"></g>
+        </svg>
+        <!-- Legend -->
+        <div style="position:absolute;bottom:8px;left:8px;z-index:900;background:rgba(0,10,0,0.8);border:1px solid rgba(0,255,65,0.25);padding:5px 10px;font-size:12px;border-radius:3px;font-family:'Heebo',sans-serif;color:#aaa;">
+          <span style="color:#ff2222">■</span> טיל איראני &nbsp;
+          <span style="color:#00bfff">■</span> תקיפה ישראלית &nbsp;
+          <span style="color:#ffe600">■</span> יירוט
+        </div>
+      </div>
+
+      <!-- INTERCEPTION RATE -->
+      <div class="gauge-wrap">
+        <div class="gauge-title">
+          <span>שיעור יירוט — כיפת ברזל</span>
+          <span style="color:var(--green)" id="interceptRate">0%</span>
+        </div>
+        <div class="gauge-bar">
+          <div class="gauge-fill green" id="interceptGauge" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-title">
+          <span>עומס מערכות הגנה</span>
+          <span style="color:var(--orange)" id="systemLoad">0%</span>
+        </div>
+        <div class="gauge-bar">
+          <div class="gauge-fill orange" id="loadGauge" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IRON DOME LOG + DONUT -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="panel">
+        <div class="panel-title">🚀 יומן יירוטים</div>
+        <div class="missile-log" id="missileLog"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📊 סטטוס מבצעי</div>
+        <div class="donut-wrap">
+          <svg class="donut-svg" width="90" height="90" viewBox="0 0 90 90" id="donutSvg">
+            <circle cx="45" cy="45" r="35" fill="none" stroke="rgba(0,200,150,0.12)" stroke-width="14"/>
+            <circle cx="45" cy="45" r="35" fill="none" stroke="var(--green)" stroke-width="14"
+              stroke-dasharray="0 220" stroke-dashoffset="55" id="donutGreen" style="transition:stroke-dasharray 1s"/>
+            <circle cx="45" cy="45" r="35" fill="none" stroke="var(--orange)" stroke-width="14"
+              stroke-dasharray="0 220" stroke-dashoffset="55" id="donutOrange" style="transition:stroke-dasharray 1s"/>
+            <circle cx="45" cy="45" r="35" fill="none" stroke="var(--red)" stroke-width="14"
+              stroke-dasharray="0 220" stroke-dashoffset="55" id="donutRed" style="transition:stroke-dasharray 1s"/>
+            <text x="45" y="42" text-anchor="middle" fill="var(--green)" font-family="Orbitron,monospace" font-size="11" font-weight="bold" id="donutPct">0%</text>
+            <text x="45" y="54" text-anchor="middle" fill="#666" font-size="7">הצלחה</text>
+          </svg>
+          <div class="donut-legend">
+            <div><div class="legend-dot" style="background:var(--green)"></div><span id="leg1">יורטו: 0</span></div>
+            <div><div class="legend-dot" style="background:var(--orange)"></div><span id="leg2">חלקי: 0</span></div>
+            <div><div class="legend-dot" style="background:var(--red)"></div><span id="leg3">פגעו: 0</span></div>
+          </div>
+        </div>
+        <hr style="border-color:rgba(0,255,65,0.1);margin:6px 0">
+        <div class="status-row"><span class="status-label">טיל ״שהאב 3״</span><span class="status-val red" id="s3">0</span></div>
+        <div class="status-row"><span class="status-label">טיל ״קדר 110״</span><span class="status-val red" id="k110">0</span></div>
+        <div class="status-row"><span class="status-label">רחפנים</span><span class="status-val orange" id="drones">0</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+    <!-- LIVE STATS -->
+    <div class="panel">
+      <div class="panel-title">📈 נתונים כלכליים ואנושיים</div>
+      <div class="status-row"><span class="status-label">עקורים</span><span class="status-val orange" id="displaced">0</span></div>
+      <div class="status-row"><span class="status-label">נפגעי אויב (בד׳)</span><span class="status-val red" id="enemyCas">0</span></div>
+      <div class="status-row"><span class="status-label">מטוסים אוייב הופלו</span><span class="status-val green" id="planesDown">0</span></div>
+      <div class="status-row"><span class="status-label">נכסים הושמדו</span><span class="status-val" id="assets">0</span></div>
+      <div class="status-row"><span class="status-label">עלות מלחמה (מ׳ $)</span><span class="status-val yellow" id="cost">0</span></div>
+      <div class="status-row"><span class="status-label">גיבוי ארה״ב</span><span class="status-val blue">פעיל ✓</span></div>
+      <hr style="border-color:rgba(0,255,65,0.1);margin:8px 0">
+      <div class="gauge-wrap">
+        <div class="gauge-title"><span>מורל כוחות ישראל</span><span id="moraleVal" style="color:var(--green)">0%</span></div>
+        <div class="gauge-bar"><div class="gauge-fill green" id="moraleBar" style="width:0%"></div></div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-title"><span>מורל כוחות איראן</span><span id="iranMoraleVal" style="color:var(--red)">0%</span></div>
+        <div class="gauge-bar"><div class="gauge-fill red" id="iranMoraleBar" style="width:0%"></div></div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-title"><span>תמיכה בינלאומית</span><span id="intlVal" style="color:var(--blue)">0%</span></div>
+        <div class="gauge-bar"><div class="gauge-fill blue" id="intlBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- NUCLEAR MONITOR -->
+    <div class="panel" style="border-color:rgba(255,140,0,0.5)">
+      <div class="panel-title" style="color:var(--orange)">☢️ מוניטור גרעיני</div>
+      <div style="text-align:center;margin:6px 0">
+        <div class="big-number" style="color:var(--orange);font-size:28px" id="radLevel">0.0</div>
+        <div class="big-label">רמת קרינה (μSv/h) — נתנז</div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-title"><span>סטטוס כור</span><span id="reactorStatus" style="color:var(--orange)">לא ידוע</span></div>
+        <div class="gauge-bar"><div class="gauge-fill orange" id="reactorBar" style="width:0%"></div></div>
+      </div>
+      <div class="status-row"><span class="status-label">מתקן פורדו</span><span class="status-val red blink">⚠ פגוע</span></div>
+      <div class="status-row"><span class="status-label">מתקן אראק</span><span class="status-val orange">מנוטר</span></div>
+      <div class="status-row"><span class="status-label">מתקן בושהר</span><span class="status-val green">שלם</span></div>
+      <div class="status-row"><span class="status-label">צוות IAEA</span><span class="status-val red">פונה</span></div>
+    </div>
+
+    <!-- CYBER -->
+    <div class="panel">
+      <div class="panel-title">💻 מבצעי סייבר</div>
+      <div class="status-row"><span class="status-label">מתקפות סייבר</span><span class="status-val red" id="cyberAtk">0</span></div>
+      <div class="status-row"><span class="status-label">תשתיות נפגעו</span><span class="status-val orange" id="infraHit">0</span></div>
+      <div class="status-row"><span class="status-label">מתקפות מנוטרלו</span><span class="status-val green" id="cyberDef">0</span></div>
+      <div style="margin-top:8px;font-size:11px;color:#4a6660;font-family:monospace;line-height:1.6" id="cyberStream">
+        > SYSTEM ACTIVE...<br>> MONITORING THREATS...
+      </div>
+    </div>
+
+    <!-- WORLD REACTION -->
+    <div class="panel">
+      <div class="panel-title">🌍 תגובות בינלאומיות</div>
+      <div id="worldReactions" style="font-size:11px;"></div>
+    </div>
+
+    <!-- LIVE NEWS — נטען ישירות מ-GDELT, ללא שרת -->
+    <div class="panel" style="border-color:rgba(56,189,248,0.35);">
+      <div class="panel-title" style="color:var(--blue);display:flex;justify-content:space-between;align-items:center;text-transform:none;">
+        <span>📡 חדשות חיות — GDELT</span>
+        <span id="gdeltStatus" style="font-size:11px;color:#444;font-weight:400;">⌛ טוען...</span>
+      </div>
+      <div id="liveNewsFeed" style="max-height:200px;overflow-y:auto;font-size:12px;line-height:1.5;">
+        <div style="color:#333;text-align:center;padding:16px 0;">טוען כתבות חיות...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <span id="dataSourceLabel" style="color:#3a5550;">⟳ מתחבר ל-GDELT...</span>
+  <span id="bottomTime">--:--:--</span>
+  <span>מרכז מעקב מבצעי v3.0 · GDELT live · סטטיסטיקות — סימולציה</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ============ STATE ============
+const state = {
+  missionSeconds: 0,
+  missilesLaunched: 847,
+  intercepted: 791,
+  casualties: 234,
+  targets: 67,
+  displaced: 45000,
+  enemyCas: 1240,
+  planesDown: 31,
+  assets: 89,
+  cost: 4200,
+  morale: 87,
+  iranMorale: 41,
+  intlSupport: 73,
+  radLevel: 12.4,
+  reactorDmg: 62,
+  cyberAtk: 3421,
+  infraHit: 14,
+  cyberDef: 3180,
+  s3: 312,
+  k110: 229,
+  drones: 306,
+  interceptPct: 93,
+  systemLoad: 78,
+};
+
+// ============ HELPERS ============
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randF(min, max) { return (Math.random() * (max - min) + min).toFixed(1); }
+function fmt(n) { return n.toLocaleString('he-IL'); }
+
+function animateNumber(el, target, duration = 800) {
+  const start = parseInt(el.textContent.replace(/,/g,'')) || 0;
+  const diff = target - start;
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = fmt(Math.round(start + diff * eased));
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// ============ MISSION CLOCK ============
+function updateClock() {
+  state.missionSeconds++;
+  const days = Math.floor(state.missionSeconds / 86400);
+  const h = Math.floor((state.missionSeconds % 86400) / 3600).toString().padStart(2,'0');
+  const m = Math.floor((state.missionSeconds % 3600) / 60).toString().padStart(2,'0');
+  const s = (state.missionSeconds % 60).toString().padStart(2,'0');
+  document.getElementById('missionClock').textContent = `${h}:${m}:${s}`;
+  // Init to some time
+}
+state.missionSeconds = 4 * 3600 + 23 * 60 + 17; // start at 4:23:17
+
+// ============ RADAR DOTS ============
+function updateRadar() {
+  const g = document.getElementById('radarDots');
+  const threats = [
+    {x: rand(20,100), y: rand(20,100), c: '#f25c5c'},
+    {x: rand(20,100), y: rand(20,100), c: '#f25c5c'},
+    {x: rand(20,100), y: rand(20,100), c: '#ff8c00'},
+    {x: rand(20,100), y: rand(20,100), c: '#00c896'},
+    {x: rand(20,100), y: rand(20,100), c: '#ffe600'},
+  ];
+  g.innerHTML = threats.map(t =>
+    `<circle cx="${t.x}" cy="${t.y}" r="2.5" fill="${t.c}" opacity="0.9" filter="url(#glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="${rand(5,15)/10}s" repeatCount="indefinite"/>
+    </circle>`
+  ).join('');
+}
+
+// ============ THREAT LEVEL ============
+const regions = ['תל אביב','ירושלים','חיפה','באר שבע','אילת','גוש דן','צפון','דרום'];
+function updateThreat() {
+  const el = document.getElementById('threatDisplay');
+  const levels = ['קריטי','גבוה','בינוני','נמוך','ללא'];
+  const colors = ['#ff2222','#ff8c00','#ffe600','#00ff41','#00aa2a'];
+  el.innerHTML = regions.map((r,i) => {
+    const lvl = rand(0, 4);
+    return `<div class="threat-bar">
+      ${[4,3,2,1,0].map(seg => `<div class="threat-segment" style="background:${seg >= lvl ? colors[Math.min(lvl,4)] : 'rgba(255,255,255,0.05)'}"></div>`).join('')}
+      <div class="threat-lbl">${r}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============ DONUT ============
+function updateDonut() {
+  const total = state.intercepted + rand(10,30) + rand(5,15);
+  const good = state.intercepted;
+  const partial = rand(10,30);
+  const bad = rand(5,15);
+  const pct = Math.round(good / (good+partial+bad) * 100);
+  const circ = 2 * Math.PI * 35;
+
+  const gFrac = good/(good+partial+bad) * circ;
+  const oFrac = partial/(good+partial+bad) * circ;
+  const rFrac = bad/(good+partial+bad) * circ;
+
+  // We layer three arcs
+  document.getElementById('donutGreen').setAttribute('stroke-dasharray', `${gFrac} ${circ - gFrac}`);
+  document.getElementById('donutGreen').setAttribute('stroke-dashoffset', '55');
+
+  document.getElementById('donutOrange').setAttribute('stroke-dasharray', `${oFrac} ${circ - oFrac}`);
+  document.getElementById('donutOrange').setAttribute('stroke-dashoffset', `${55 - gFrac}`);
+
+  document.getElementById('donutRed').setAttribute('stroke-dasharray', `${rFrac} ${circ - rFrac}`);
+  document.getElementById('donutRed').setAttribute('stroke-dashoffset', `${55 - gFrac - oFrac}`);
+
+  document.getElementById('donutPct').textContent = pct + '%';
+  document.getElementById('leg1').textContent = `יורטו: ${fmt(good)}`;
+  document.getElementById('leg2').textContent = `חלקי: ${fmt(partial)}`;
+  document.getElementById('leg3').textContent = `פגעו: ${fmt(bad)}`;
+}
+
+// ============ MISSILE LOG ============
+const missileTypes = ['שהאב-3','קדר-110','פאג׳ר-5','זלזל-2','קאסם','C-802'];
+const cities = ['תל אביב','חיפה','ירושלים','אשדוד','נתניה','באר שבע','רמת גן','ראשון לציון'];
+const results = [
+  {label:'יורט', cls:'result-ok'},
+  {label:'יורט', cls:'result-ok'},
+  {label:'יורט', cls:'result-ok'},
+  {label:'יורט', cls:'result-ok'},
+  {label:'יורט', cls:'result-ok'},
+  {label:'פגיעה', cls:'result-hit'},
+  {label:'חלקי', cls:'result-partial'},
+];
+const missileLog = [];
+function addMissileEntry() {
+  const now = new Date();
+  const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  const type = missileTypes[rand(0,missileTypes.length-1)];
+  const city = cities[rand(0,cities.length-1)];
+  const res = results[rand(0,results.length-1)];
+  missileLog.unshift({t, type, city, res});
+  if (missileLog.length > 20) missileLog.pop();
+
+  const el = document.getElementById('missileLog');
+  el.innerHTML = missileLog.map(e =>
+    `<div class="missile-entry">
+      <span class="time">${e.t}</span>
+      <span class="event">${e.type} → ${e.city}</span>
+      <span class="${e.res.cls}">${e.res.label}</span>
+    </div>`
+  ).join('');
+}
+
+// ============ COMMS ============
+const commSources = ['רמ"ח מבצעים','חיל האוויר','יחידה 8200','חיל הים','מוסד','שב"כ','ארה"ב','NATO HQ'];
+const commMessages = [
+  'יחידות בכוננות מלאה, מחכות לפקודה',
+  'טייסת F-35 ממריאה מנבטים',
+  'זוהה שיגור ממחוז חוזסטן',
+  'מיירטים מופעלים בסקטור ג׳',
+  'פגיעה מדויקת במטרה 47',
+  'כוח צלילה בפעולה',
+  'תמיכה אווירית בדרך',
+  'מערכת יכין מדווחת תקינה',
+  'פינוי אזרחים מואץ',
+  'קשר מוצפן הוקם',
+  'בינה מלאכותית מנתחת נתיבים',
+  'מכ"ם מזהה 12 מטרות נוספות',
+];
+function addComm() {
+  const el = document.getElementById('commsLog');
+  const from = commSources[rand(0,commSources.length-1)];
+  const msg = commMessages[rand(0,commMessages.length-1)];
+  const div = document.createElement('div');
+  div.className = 'comm-entry';
+  div.innerHTML = `<span class="comm-from">${from}</span><span class="comm-msg">${msg}</span>`;
+  el.insertBefore(div, el.firstChild);
+  if (el.children.length > 8) el.removeChild(el.lastChild);
+}
+
+// ============ WORLD REACTIONS ============
+const worldData = [
+  {flag:'🇺🇸', country:'ארה"ב', stance:'תמיכה מלאה', color:'var(--green)'},
+  {flag:'🇷🇺', country:'רוסיה', stance:'גינוי חריף', color:'var(--red)'},
+  {flag:'🇨🇳', country:'סין', stance:'דאגה עמוקה', color:'var(--orange)'},
+  {flag:'🇬🇧', country:'בריטניה', stance:'עם ישראל', color:'var(--green)'},
+  {flag:'🇫🇷', country:'צרפת', stance:'קריאה להפסקה', color:'var(--yellow)'},
+  {flag:'🇸🇦', country:'סעודיה', stance:'ניטרלי', color:'#aaa'},
+  {flag:'🇹🇷', country:'טורקיה', stance:'נגד', color:'var(--red)'},
+  {flag:'🇩🇪', country:'גרמניה', stance:'תמיכה', color:'var(--green)'},
+];
+function renderWorldReactions() {
+  document.getElementById('worldReactions').innerHTML = worldData.map(w =>
+    `<div class="status-row">
+      <span class="status-label">${w.flag} ${w.country}</span>
+      <span class="status-val" style="color:${w.color}">${w.stance}</span>
+    </div>`
+  ).join('');
+}
+
+// ============ LEAFLET MAP ============
+let leafletMap = null;
+
+function makeIcon(emoji, glowColor) {
+  return L.divIcon({
+    html: `<div style="font-size:22px;line-height:1;filter:drop-shadow(0 0 8px ${glowColor});text-align:center;">${emoji}</div>`,
+    className: '',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  });
+}
+
+function initMap() {
+  leafletMap = L.map('leafletMap', {
+    center: [32, 45],
+    zoom: 5,
+    zoomControl: false,
+    attributionControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    touchZoom: false,
+    keyboard: false,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(leafletMap);
+
+  // Country markers
+  const countries = [
+    { latlng: [31.5, 34.8],  emoji: '🇮🇱', label: 'ישראל',       color: '#00c896' },
+    { latlng: [32.4, 53.7],  emoji: '🇮🇷', label: 'איראן',        color: '#f25c5c' },
+    { latlng: [33.9, 35.5],  emoji: '🇱🇧', label: 'לבנון',        color: '#f59e0b' },
+    { latlng: [34.8, 38.9],  emoji: '🇸🇾', label: 'סוריה',        color: '#aaa' },
+    { latlng: [31.0, 36.5],  emoji: '🇯🇴', label: 'ירדן',         color: '#aaa' },
+    { latlng: [33.2, 43.7],  emoji: '🇮🇶', label: 'עיראק',        color: '#aaa' },
+    { latlng: [24.0, 45.0],  emoji: '🇸🇦', label: 'ערב הסעודית', color: '#666' },
+    { latlng: [23.6, 58.6],  emoji: '🇴🇲', label: 'עומאן',        color: '#666' },
+  ];
+
+  countries.forEach(c => {
+    L.marker(c.latlng, { icon: makeIcon(c.emoji, c.color) })
+      .bindTooltip(c.label, {
+        permanent: true,
+        direction: 'bottom',
+        className: 'map-tooltip',
+        offset: [0, 8],
+      })
+      .addTo(leafletMap);
+  });
+
+  // Nuclear target markers (red cross)
+  const nucTargets = [
+    { latlng: [33.72, 51.92], label: '☢️ נתנז' },
+    { latlng: [34.88, 50.58], label: '☢️ פורדו' },
+    { latlng: [32.66, 51.67], label: '☢️ אספהאן' },
+    { latlng: [28.93, 50.83], label: '☢️ בושהר' },
+  ];
+  nucTargets.forEach(t => {
+    L.marker(t.latlng, {
+      icon: L.divIcon({
+        html: `<div style="color:#f59e0b;font-size:14px;font-weight:900;text-shadow:0 0 6px #f59e0b;font-family:'Heebo',sans-serif;">✕</div>`,
+        className: '',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      })
+    }).bindTooltip(t.label, {
+      permanent: false,
+      className: 'map-tooltip',
+      direction: 'top',
+    }).addTo(leafletMap);
+  });
+}
+
+// ============ MAP MISSILES ============
+const ISRAEL_LATLNG = [31.5, 34.8];
+const IRAN_LATLNG   = [32.4, 53.7];
+const israelTargets = [
+  [32.07, 34.78], // תל אביב
+  [31.77, 35.21], // ירושלים
+  [32.82, 35.0],  // חיפה
+  [31.25, 34.79], // באר שבע
+  [32.32, 34.86], // נתניה
+  [31.96, 34.81], // רחובות
+];
+const iranTargets = [
+  [33.72, 51.92], // נתנז
+  [34.88, 50.58], // פורדו
+  [35.69, 51.39], // טהרן
+  [32.66, 51.67], // אספהאן
+  [28.93, 50.83], // בושהר
+  [29.6,  52.5],  // שיראז
+];
+let missileId = 0;
+
+function fireMissile(fromIran = true) {
+  if (!leafletMap) return;
+  const g  = document.getElementById('missileGroup');
+  const eg = document.getElementById('explosionGroup');
+  const ig = document.getElementById('interceptGroup');
+
+  const fromLL    = fromIran ? IRAN_LATLNG   : ISRAEL_LATLNG;
+  const targets   = fromIran ? israelTargets : iranTargets;
+  const toLL      = targets[rand(0, targets.length - 1)];
+  const intercepted = Math.random() < (fromIran ? 0.92 : 0.3);
+  const color     = fromIran ? '#f25c5c' : '#38bdf8';
+
+  const fromPx = leafletMap.latLngToContainerPoint(fromLL);
+  const toPx   = leafletMap.latLngToContainerPoint(toLL);
+
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('r', '3.5');
+  dot.setAttribute('fill', color);
+  dot.setAttribute('filter', 'url(#glow)');
+  dot.setAttribute('cx', fromPx.x);
+  dot.setAttribute('cy', fromPx.y);
+  g.appendChild(dot);
+
+  const totalFrames = 90;
+  let frame = 0;
+  const interceptFrame = Math.floor(totalFrames * (0.35 + Math.random() * 0.45));
+
+  function animate() {
+    frame++;
+    const progress = frame / totalFrames;
+    const cx = fromPx.x + (toPx.x - fromPx.x) * progress;
+    const cy = fromPx.y + (toPx.y - fromPx.y) * progress - Math.sin(progress * Math.PI) * 65;
+    dot.setAttribute('cx', cx);
+    dot.setAttribute('cy', cy);
+
+    if (intercepted && frame === interceptFrame) {
+      const flash = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      flash.setAttribute('cx', cx); flash.setAttribute('cy', cy);
+      flash.setAttribute('r', '7'); flash.setAttribute('fill', '#fbbf24');
+      flash.setAttribute('opacity', '1');
+      ig.appendChild(flash);
+      let op2 = 1;
+      function fadeFlash() {
+        op2 -= 0.06;
+        flash.setAttribute('opacity', Math.max(0, op2));
+        if (op2 > 0) requestAnimationFrame(fadeFlash);
+        else if (ig.contains(flash)) ig.removeChild(flash);
+      }
+      setTimeout(() => requestAnimationFrame(fadeFlash), 200);
+      if (g.contains(dot)) g.removeChild(dot);
+      return;
+    }
+
+    if (frame >= totalFrames) {
+      if (g.contains(dot)) g.removeChild(dot);
+      const exp = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      exp.setAttribute('cx', toPx.x); exp.setAttribute('cy', toPx.y);
+      exp.setAttribute('r', '2'); exp.setAttribute('fill', color); exp.setAttribute('opacity', '1');
+      eg.appendChild(exp);
+      let r = 2, op = 1;
+      function expandExp() {
+        r += 2; op -= 0.055;
+        exp.setAttribute('r', r); exp.setAttribute('opacity', Math.max(0, op));
+        if (op > 0) requestAnimationFrame(expandExp);
+        else if (eg.contains(exp)) eg.removeChild(exp);
+      }
+      requestAnimationFrame(expandExp);
+      return;
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+// ============ CYBER STREAM ============
+const cyberLines = [
+  '> PING 192.168.47.1 — TIMEOUT',
+  '> SQL INJECTION BLOCKED ✓',
+  '> ANOMALY DETECTED IN SECTOR 7',
+  '> FIREWALL RULE 2047 TRIGGERED',
+  '> DECRYPTION ATTEMPT — FAILED',
+  '> REROUTING COMMS...',
+  '> INTRUSION ATTEMPT LOGGED',
+  '> NEURAL NET ANALYSIS COMPLETE',
+  '> MALWARE SIGNATURE DETECTED',
+  '> COUNTERMEASURE DEPLOYED ✓',
+  '> DATA EXFIL BLOCKED ✓',
+  '> SATELLITE UPLINK SECURED',
+];
+let cyberLines_shown = [];
+function addCyberLine() {
+  cyberLines_shown.push(cyberLines[rand(0,cyberLines.length-1)]);
+  if (cyberLines_shown.length > 5) cyberLines_shown.shift();
+  document.getElementById('cyberStream').innerHTML = cyberLines_shown.join('<br>');
+}
+
+// ============ MAIN UPDATE ============
+function updateAllStats() {
+  // Increment state
+  const newMissiles = rand(1, 4);
+  state.missilesLaunched += newMissiles;
+  state.intercepted += rand(0, newMissiles);
+  state.casualties += rand(0, 3);
+  state.targets += rand(0, 1);
+  state.displaced += rand(100, 800);
+  state.enemyCas += rand(0, 8);
+  if (Math.random() < 0.05) state.planesDown += 1;
+  state.assets += rand(0, 1);
+  state.cost += rand(20, 80);
+  state.morale = Math.min(98, Math.max(60, state.morale + rand(-2,2)));
+  state.iranMorale = Math.max(15, Math.min(55, state.iranMorale + rand(-3,1)));
+  state.intlSupport = Math.min(90, Math.max(60, state.intlSupport + rand(-1,2)));
+  state.radLevel = parseFloat((state.radLevel + (Math.random() - 0.4) * 0.8).toFixed(1));
+  state.reactorDmg = Math.min(95, Math.max(50, state.reactorDmg + rand(-1,2)));
+  state.cyberAtk += rand(5, 25);
+  if (Math.random() < 0.05) state.infraHit += 1;
+  state.cyberDef += rand(4, 22);
+  state.s3 += rand(0,1);
+  state.k110 += rand(0,1);
+  state.drones += rand(0,2);
+
+  const intercPct = Math.round(state.intercepted / state.missilesLaunched * 100);
+  const sysLoad = Math.min(99, Math.max(60, 70 + rand(-5,5)));
+
+  // DOM updates
+  animateNumber(document.getElementById('missilesLaunched'), state.missilesLaunched);
+  animateNumber(document.getElementById('intercepted'), state.intercepted);
+  animateNumber(document.getElementById('casualties'), state.casualties);
+  animateNumber(document.getElementById('targets'), state.targets);
+  animateNumber(document.getElementById('displaced'), state.displaced);
+  animateNumber(document.getElementById('enemyCas'), state.enemyCas);
+  document.getElementById('planesDown').textContent = state.planesDown;
+  document.getElementById('assets').textContent = state.assets;
+  animateNumber(document.getElementById('cost'), state.cost);
+
+  document.getElementById('missilesChange').textContent = `↑ +${newMissiles} השידור האחרון`;
+  document.getElementById('units').textContent = rand(240,260);
+
+  document.getElementById('interceptRate').textContent = intercPct + '%';
+  document.getElementById('interceptGauge').style.width = intercPct + '%';
+  document.getElementById('systemLoad').textContent = sysLoad + '%';
+  document.getElementById('loadGauge').style.width = sysLoad + '%';
+
+  document.getElementById('moraleVal').textContent = state.morale + '%';
+  document.getElementById('moraleBar').style.width = state.morale + '%';
+  document.getElementById('iranMoraleVal').textContent = state.iranMorale + '%';
+  document.getElementById('iranMoraleBar').style.width = state.iranMorale + '%';
+  document.getElementById('intlVal').textContent = state.intlSupport + '%';
+  document.getElementById('intlBar').style.width = state.intlSupport + '%';
+
+  document.getElementById('radLevel').textContent = state.radLevel;
+  document.getElementById('reactorBar').style.width = state.reactorDmg + '%';
+  const statuses = ['נזק קריטי','נזק חמור','מנוטר','יציב'];
+  document.getElementById('reactorStatus').textContent = state.reactorDmg > 80 ? statuses[0] : state.reactorDmg > 65 ? statuses[1] : statuses[2];
+
+  document.getElementById('cyberAtk').textContent = fmt(state.cyberAtk);
+  document.getElementById('infraHit').textContent = state.infraHit;
+  document.getElementById('cyberDef').textContent = fmt(state.cyberDef);
+
+  document.getElementById('s3').textContent = state.s3;
+  document.getElementById('k110').textContent = state.k110;
+  document.getElementById('drones').textContent = state.drones;
+
+  updateDonut();
+}
+
+// ============ BOTTOM TIME ============
+function updateBottomTime() {
+  const now = new Date();
+  document.getElementById('bottomTime').textContent =
+    `${now.toLocaleDateString('he-IL')} · ${now.toLocaleTimeString('he-IL')}`;
+}
+
+// ============ INIT & INTERVALS ============
+// Initial render
+initMap();
+renderWorldReactions();
+updateThreat();
+updateRadar();
+for (let i = 0; i < 5; i++) addMissileEntry();
+for (let i = 0; i < 4; i++) addComm();
+updateAllStats();
+updateBottomTime();
+
+// Clock - every second
+setInterval(() => {
+  updateClock();
+  updateBottomTime();
+}, 1000);
+
+// Stats - every 2 seconds
+setInterval(updateAllStats, 2000);
+
+// Missile log - every 3 seconds
+setInterval(addMissileEntry, 3000);
+
+// Comms - every 4 seconds
+setInterval(addComm, 4000);
+
+// Radar - every 2 seconds
+setInterval(updateRadar, 2000);
+
+// Threat - every 5 seconds
+setInterval(updateThreat, 5000);
+
+// Cyber - every 2 seconds
+setInterval(addCyberLine, 2000);
+
+// Map missiles - every 2.5 seconds
+setInterval(() => {
+  fireMissile(true);
+  if (Math.random() < 0.3) fireMissile(false);
+}, 2500);
+
+// ══════════════════════════════════════════════════════════
+//  GDELT LIVE NEWS — קריאה ישירה מהדפדפן, ללא שרת, ללא מפתח
+//  מתעדכן כל 3 דקות אוטומטית
+// ══════════════════════════════════════════════════════════
+
+// ── render articles (unified format) ─────────────────────────────────────
+function renderNews(articles) {
+  const el = document.getElementById('liveNewsFeed');
+  if (!articles?.length) {
+    el.innerHTML = '<div style="color:#333;text-align:center;padding:12px">אין כתבות זמינות</div>';
+    return;
+  }
+  el.innerHTML = articles.slice(0, 18).map(a => {
+    let dateStr = '';
+    try {
+      const raw = a.pubDate || a.seendate || a.date || '';
+      const d = new Date(raw);
+      if (!isNaN(d)) dateStr = d.toLocaleDateString('he-IL');
+    } catch(_) {}
+    return `<a href="${a.link || a.url || '#'}" target="_blank"
+        style="display:block;padding:7px 0;border-bottom:1px solid rgba(56,189,248,0.1);text-decoration:none;">
+      <div style="color:#c8eaf8;font-size:12.5px;font-weight:600;line-height:1.4;"
+           onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#c8eaf8'">
+        ${(a.title || '').replace(/<[^>]+>/g,'')}
+      </div>
+      <div style="color:#2a4a55;font-size:11px;margin-top:2px">
+        ${a.source || a.domain || ''} · ${dateStr}
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function updateTickerReal(articles) {
+  if (!articles?.length) return;
+  document.getElementById('tickerText').textContent =
+    articles.slice(0, 12).map(a => (a.title||'').replace(/<[^>]+>/g,'')).join(' · ') + ' · ';
+}
+
+function setStatus(ok, text) {
+  const s = document.getElementById('gdeltStatus');
+  const b = document.getElementById('dataSourceLabel');
+  s.textContent = text; s.style.color = ok ? '#38bdf8' : '#f25c5c';
+  b.textContent = ok ? `✓ חדשות חיות · ${text} · סטטיסטיקות — סימולציה` : '⚠ לא מחובר לנתונים חיים';
+  b.style.color = ok ? '#00c896' : '#f59e0b';
+}
+
+// ── RSS via rss2json (ללא מפתח, ללא CORS) ────────────────────────────────
+const RSS_FEEDS = [
+  { url: 'https://www.timesofisrael.com/feed/',             source: 'Times of Israel' },
+  { url: 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx',source: 'Jerusalem Post'  },
+  { url: 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml', source: 'BBC Middle East' },
+  { url: 'https://rss.cnn.com/rss/edition_meast.rss',       source: 'CNN Middle East' },
+];
+
+async function fetchRSS(feed) {
+  const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=12`;
+  const res  = await fetch(api, { signal: AbortSignal.timeout(8000) });
+  const data = await res.json();
+  if (data.status !== 'ok') throw new Error('rss error');
+  return (data.items || []).map(i => ({ ...i, source: feed.source }));
+}
+
+// ── GDELT fallback ─────────────────────────────────────────────────────────
+async function fetchGDELT() {
+  const q   = encodeURIComponent('Israel Iran attack strike war');
+  const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=20&sort=DateDesc&format=json`;
+  const res  = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const data = await res.json();
+  const items = (data.articles || []).map(a => ({
+    title: a.title, link: a.url, source: a.domain,
+    pubDate: a.seendate ? `${a.seendate.slice(0,4)}-${a.seendate.slice(4,6)}-${a.seendate.slice(6,8)}` : '',
+  }));
+  if (!items.length) throw new Error('no results');
+  return items;
+}
+
+// ── Main: try RSS feeds first, then GDELT ─────────────────────────────────
+async function loadLiveNews() {
+  const ts = () => new Date().toLocaleTimeString('he-IL');
+
+  // Try RSS feeds in parallel
+  const results = await Promise.allSettled(RSS_FEEDS.map(fetchRSS));
+  const allArticles = results
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value)
+    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  if (allArticles.length > 0) {
+    renderNews(allArticles);
+    updateTickerReal(allArticles);
+    setStatus(true, `${allArticles.length} כתבות · עודכן ${ts()}`);
+    return;
+  }
+
+  // Fallback: GDELT
+  try {
+    const gdeltArticles = await fetchGDELT();
+    renderNews(gdeltArticles);
+    updateTickerReal(gdeltArticles);
+    setStatus(true, `GDELT · ${gdeltArticles.length} כתבות · ${ts()}`);
+  } catch(e) {
+    setStatus(false, 'לא זמין');
+    document.getElementById('liveNewsFeed').innerHTML =
+      `<div style="padding:12px;color:#2a4050;font-size:12px;line-height:1.9;">
+        לא הצלחנו לטעון חדשות חיות כרגע.<br>
+        <span style="color:#f59e0b">סיבות אפשריות:</span> אין חיבור לאינטרנט,
+        או שה-tiiny.host חוסם את הבקשה.<br>
+        נסי לרענן את הדף בעוד דקה.
+      </div>`;
+  }
+}
+
+// Boot + רענון כל 3 דקות
+loadLiveNews();
+setInterval(loadLiveNews, 3 * 60 * 1000);
+</script>
+</body>
+</html>
