@@ -3,10 +3,10 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=120');
 
   const RSS_FEEDS = [
-    'https://www.timesofisrael.com/feed/',
-    'https://www.jpost.com/rss/rssfeedsfrontpage.aspx',
-    'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml',
-    'https://rss.cnn.com/rss/edition_meast.rss',
+    'https://www.ynet.co.il/Integration/StoryRss2.xml',
+    'https://rss.walla.co.il/feed/1',
+    'https://rss.mako.co.il/rssChannel/d4dc8e29c4a8b110VgnVCM2000002a0c14acRCRD.xml',
+    'https://www.maariv.co.il/Rss/RssFeedsMivzakChadashot',
   ];
 
   async function fetchRSS(url) {
